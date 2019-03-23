@@ -2,21 +2,43 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
-// TODO: rewrite through strtok
+#include <string.h>
+char buf[1024];
+void split(char *command, int *argc, char *argv[])
+{
+    strncpy(buf, command, strlen(command));
+    char *str = buf;
+    char spi[] = " ";
+    char *p = NULL;
+    *argc = 0;
+    argv[*argc] = strtok(str, spi);
+    ++*argc;
+    while ((p = strtok(NULL, spi)))
+    {
+        argv[*argc] = p;
+        ++*argc;
+    }
+}
+
 void mysys(char *command)
 {
-    //pid = fork();
     pid_t pid;
     int status;
+    int wordc;
+    char *wordn[8];
     if (command == NULL)
     {
         printf("err command\n");
         return;
     }
+    split(command, &wordc, wordn);
+    wordn[wordc]=NULL;
+
     pid = fork();
     if (pid == 0)
     {
-        execl("/bin/sh", "sh", "-c", command, NULL);
+        // execl("/bin/sh", "sh", "-c", command, NULL);
+        execvp(wordn[0], wordn);
         exit(123);
     }
     else
