@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
-
+// TODO: rewrite through strtok
 void mysys(char *command)
 {
     //pid = fork();
