@@ -32,13 +32,17 @@ void mysys(char *command)
         return;
     }
     split(command, &wordc, wordn);
-    wordn[wordc]=NULL;
+    wordn[wordc] = NULL;
 
     pid = fork();
     if (pid == 0)
     {
         // execl("/bin/sh", "sh", "-c", command, NULL);
-        execvp(wordn[0], wordn);
+        int pcode = execvp(wordn[0], wordn);
+        if (pcode < 0)
+        {
+            perror("execvp");
+        }
         exit(123);
     }
     else
