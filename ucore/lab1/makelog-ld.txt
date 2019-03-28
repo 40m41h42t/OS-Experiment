@@ -1,0 +1,16 @@
++ ld bin/bootblock
+ld -m    elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.o obj/boot/bootmain.o -o obj/bootblock.o
+'obj/bootblock.out' size: 488 bytes
+build 512 bytes boot sector: 'bin/bootblock' success!
+dd if=/dev/zero of=bin/ucore.img count=10000
+10000+0 records in
+10000+0 records out
+5120000 bytes (5.1 MB, 4.9 MiB) copied, 1.86576 s, 2.7 MB/s
+dd if=bin/bootblock of=bin/ucore.img conv=notrunc
+1+0 records in
+1+0 records out
+512 bytes copied, 0.00074265 s, 689 kB/s
+dd if=bin/kernel of=bin/ucore.img seek=1 conv=notrunc
+146+1 records in
+146+1 records out
+74828 bytes (75 kB, 73 KiB) copied, 0.0417151 s, 1.8 MB/s
