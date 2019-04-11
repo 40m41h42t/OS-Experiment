@@ -99,19 +99,54 @@
   --------------------------------------------------
   ```
 
-## sh1.c: 实现shell程序，要求具备如下功能
+## sh1.c
 
-- 支持命令参数
+- 该程序读取用户输入的命令，调用函数mysys(上一个作业)执行用户的命令，示例如下
 
-  ```bash
-  $ echo arg1 arg2 arg3
-  $ ls /bin /usr/bin /home
+  ```
+  # 编译sh1.c
+  $ cc -o sh1 sh1.c
+  
+  # 执行sh1
+  $ ./sh 
+  
+  # sh1打印提示符>，同时读取用户输入的命令echo，并执行输出结果
+  > echo a b c
+  a b c
+  
+  # sh1打印提示符>，同时读取用户输入的命令cat，并执行输出结果
+  > cat /etc/passwd
+  root:x:0:0:root:/root:/bin/bash
+  daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+  bin:x:2:2:bin:/bin:/usr/sbin/nologin
   ```
 
-- 实现内置命令cd、pwd、exit
+- 请考虑如何实现内置命令cd、pwd、exit
 
-  ```bash
-  $ cd /bin
-  $ pwd
-  /bin
+## sh2.c: 实现shell程序，要求在第1版的基础上，添加如下功能
+
+- 实现文件重定向
+
+  ```
+  # 执行sh2
+  $ ./sh2
+  
+  # 执行命令echo，并将输出保存到文件log中
+  > echo hello >log
+  
+  # 打印cat命令的输出结果
+  > cat log
+  hello
+  ```
+
+## sh3.c: 实现shell程序，要求在第2版的基础上，添加如下功能
+
+- 实现管道
+
+  ```
+  # 执行sh3
+  $ ./sh3
+  
+  # 执行命令cat和wc，使用管道连接cat和wc
+  > cat /etc/passwd | wc -l
   ```
