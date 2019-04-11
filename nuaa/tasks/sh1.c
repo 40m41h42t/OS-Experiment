@@ -7,7 +7,6 @@
 #define TRUE 1
 #define FALSE 0
 #define ARG_MAX 1024
-#define ARG_ZERO 17
 
 int split(char *command, int *argc, char *argv[]);
 int mysys(char *command);
