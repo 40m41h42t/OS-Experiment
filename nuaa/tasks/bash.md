@@ -36,3 +36,20 @@ char * getcwd(char * buf, size_t size);
 ```
 
 特性：可以自主分配，返回指针。
+
+在 Linux 中，实现文件重定向利用了 `dup` 系列函数
+
+```c
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);
+```
+
+我们继续追溯 dup，会找到 fcntl 函数
+
+```c
+int fcntl(int fd, int cmd, ... /* arg */ );
+```
+
+实现文件重定向的话也适合先用 KISS 法则，遍历字符串搜索字符 '`>`'，然后将左侧的命令输出到 stdout
+
+
