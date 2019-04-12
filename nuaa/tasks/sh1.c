@@ -7,7 +7,7 @@
 #define TRUE 1
 #define FALSE 0
 #define ARG_MAX 1024
-
+// TODO: change builtin-command into switch
 int split(char *command, int *argc, char *argv[]);
 int mysys(char *command);
 
