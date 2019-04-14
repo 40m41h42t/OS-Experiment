@@ -84,7 +84,7 @@ int mysys(char *command)
     int argc;
     // redirect variables
     int redir_loc;
-    char redir_filename[129];
+    char redir_filename[FILE_NAME_MAX + 1];
     int fd;
     // temp variables
     int i;
@@ -113,7 +113,6 @@ int mysys(char *command)
                 ++j;
             }
         redir_filename[j] = '\0';
-        fd = open(redir_filename, O_CREAT | O_RDWR, 0666);
         command[redir_loc] = '\0';
     }
     // split input command
@@ -130,8 +129,12 @@ int mysys(char *command)
     // stdin;
     if (pid == 0)
     {
-        if(redir_flag)
+        if (redir_flag)
+        {
+            fd = open(redir_filename, O_CREAT | O_RDWR, 0666);
             dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
         if (execvp(argv[0], argv) < 0)
             perror("execvp");
         exit(-1);
