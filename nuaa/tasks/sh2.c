@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 
+#define BOOL int
 #define TRUE 1
 #define FALSE 0
 #define ARG_MAX 1024
+#define FILE_NAME_MAX 128
 
 static char cr_lf[] = "\n";
 
@@ -71,17 +74,52 @@ int split(char *command, int *argc, char *argv[])
 
 int mysys(char *command)
 {
+    // init variables
+
+    // pid variables
     pid_t pid;
     int status;
-    if (command == NULL)
-        return 0;
-    // split input command
+    // command variables
     char *argv[100];
     int argc;
+    // redirect variables
+    int redir_loc;
+    char redir_filename[129];
+    int fd;
+    // temp variables
+    int i;
+    int j;
+
+    if (command == NULL)
+        return 0;
+
+    // at first, check if need redirection
+    BOOL redir_flag = FALSE;
+    for (i = 0; i < strlen(command); i++)
+        if (command[i] == '>')
+        {
+            redir_flag = TRUE;
+            break;
+        }
+    if (redir_flag)
+    {
+        redir_loc = i;
+        // memcpy from '>'+1 to end of command.
+        // However, space is unuseful which need delete.
+        for (i = i + 1, j = 0; i < strlen(command) && j < FILE_NAME_MAX; ++i)
+            if (command[i] != ' ')
+            {
+                redir_filename[j] = command[i];
+                ++j;
+            }
+        redir_filename[j] = '\0';
+        fd = open(redir_filename, O_CREAT | O_RDWR, 0666);
+        command[redir_loc] = '\0';
+    }
+    // split input command
     split(command, &argc, argv);
     argv[argc] = NULL;
     // in-bash command won't fork new process
-    int i;
     for (i = 0; i < NR_BUILTIN_CMD; i++)
         if (strcmp(argv[0], built_in_cmd_table[i].name) == 0)
             if (built_in_cmd_table[i].handler(argv) == TRUE)
@@ -89,8 +127,11 @@ int mysys(char *command)
     // while command isn't NULL,
     // fork a new process to execute
     pid = fork();
+    // stdin;
     if (pid == 0)
     {
+        if(redir_flag)
+            dup2(fd, STDOUT_FILENO);
         if (execvp(argv[0], argv) < 0)
             perror("execvp");
         exit(-1);
