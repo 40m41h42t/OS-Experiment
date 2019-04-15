@@ -10,7 +10,6 @@
 #define TRUE 1
 #define FALSE 0
 #define ARG_MAX 256
-#define FILE_NAME_MAX 128
 #define ARG_NUM 64
 #define FD_UNDEF -1
 
@@ -78,10 +77,8 @@ void sh_pipe(char *command)
 {
     int fd_pipe[2], fd_tmp;
     int len = strlen(command);
-    int i = 0, status;
-    char *p;
-    char *cmds[ARG_NUM];
-    int pipe_c = 0;
+    int i = 0, status, pipe_c = 0;
+    char *p, *cmds[ARG_NUM];
     cmds[pipe_c++] = command;
     for (i = 0; i < len; ++i)
     {
@@ -92,16 +89,15 @@ void sh_pipe(char *command)
             p = command + i - 1;
             while (*p == ' ' || *p == '\n')
             {
-                *p = 0;
+                *p = '\0';
                 --p;
             }
             // right, output pipe
             p = command + i + 1;
             while (*p && (*p == ' ' || *p == '\n'))
             {
-                *p = 0;
+                *p = '\0';
                 ++p;
-                ++i;
             }
             cmds[pipe_c++] = p;
         }
@@ -125,16 +121,18 @@ void sh_pipe(char *command)
         if (i == 0)
             // input to pipe
             sh_dup(cmds[i], FD_UNDEF, fd_pipe[1]);
-        else if (i != pipe_c - 1){
+        else if (i != pipe_c - 1)
+        {
             fd_tmp = fd_pipe[0];
             status = pipe(fd_pipe);
-            if(fd_tmp == -1){
+            if (fd_tmp == -1)
+            {
                 printf("can't open pipe.\n");
-                return ;
+                return;
             }
             sh_dup(cmds[i], fd_tmp, fd_pipe[1]);
         }
-            
+
         else
             // output from pipe
             sh_dup(cmds[i], fd_pipe[0], FD_UNDEF);
@@ -196,9 +194,6 @@ void mysys(char *command, int fd_read, int fd_write)
     int status, argc;
     char *p = NULL, *argv[ARG_NUM];
 
-    split(command, &argc, argv);
-    argv[argc] = NULL;
-
     pid = fork();
     if (pid == -1)
     {
@@ -212,7 +207,6 @@ void mysys(char *command, int fd_read, int fd_write)
         if (fd_write != FD_UNDEF)
             close(fd_write);
         waitpid(pid, NULL, 0);
-        return;
     }
     else
     {
@@ -232,6 +226,9 @@ void mysys(char *command, int fd_read, int fd_write)
             if (status < 0)
                 printf("%s dup stdout failed: %s\n", argv[0], strerror(errno));
         }
+        split(command, &argc, argv);
+        argv[argc] = NULL;
+        printf("%s\n", argv[0]);
         if (execvp(argv[0], argv) == -1)
             printf("%s exec failed: %s\n", argv[0], strerror(errno));
         exit(0);
@@ -240,18 +237,19 @@ void mysys(char *command, int fd_read, int fd_write)
 
 int split(char *command, int *argc, char *argv[])
 {
-    char buf[ARG_MAX + 1], split_str[] = " ";
-    char *str = buf, *p = NULL;
-
-    memset(buf, 0, sizeof(char) * (ARG_MAX + 1));
-    strncpy(buf, command, strlen(command));
+    char *p = NULL;
+    int i;
     *argc = 0;
-    argv[*argc] = strtok(str, split_str);
-    ++*argc;
-    while ((p = strtok(NULL, split_str)))
-    {
-        argv[*argc] = p;
-        ++*argc;
+    argv[(*argc)++] = command;
+    for(i=0;i<strlen(command);++i){
+        if(command[i] == ' '){
+            command[i] = '\0';
+            p = command + i + 1;
+            while(*p&&(*p == ' ')){
+                ++p;
+            }
+            argv[(*argc)++] = p;
+        }
     }
     return 0;
 }
