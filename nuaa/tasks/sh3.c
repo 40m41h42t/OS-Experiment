@@ -76,7 +76,7 @@ void sh_mainloop()
 
 void sh_pipe(char *command)
 {
-    int fd_pipe[2];
+    int fd_pipe[2], fd_tmp;
     int len = strlen(command);
     int i = 0, status;
     char *p;
@@ -125,8 +125,16 @@ void sh_pipe(char *command)
         if (i == 0)
             // input to pipe
             sh_dup(cmds[i], FD_UNDEF, fd_pipe[1]);
-        else if (i != pipe_c - 1)
-            sh_dup(cmds[i], fd_pipe[0], fd_pipe[1]);
+        else if (i != pipe_c - 1){
+            fd_tmp = fd_pipe[0];
+            status = pipe(fd_pipe);
+            if(fd_tmp == -1){
+                printf("can't open pipe.\n");
+                return ;
+            }
+            sh_dup(cmds[i], fd_tmp, fd_pipe[1]);
+        }
+            
         else
             // output from pipe
             sh_dup(cmds[i], fd_pipe[0], FD_UNDEF);
