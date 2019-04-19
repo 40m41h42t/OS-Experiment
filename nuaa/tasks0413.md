@@ -23,9 +23,9 @@ tar cvfz 2019OS_hw1_xxxx.tar.gz 2019OS_hw1
 此作业将指导你完成设置自己Linux环境所需遵循的步骤。
 
 1. 下载VirtualBox
-  https://www.virtualbox.org/
+    https://www.virtualbox.org/
 2. 下载Ubuntu 18.04
-  https://www.ubuntu.com/download/desktop
+    https://www.ubuntu.com/download/desktop
 3. 基于VirtualBox安装Ubuntu（网上有相关教程）
 
 # 作业1:
@@ -34,7 +34,7 @@ fib(0) = 0
 fib(1) = 1
 fib(n) = fib(n-1) + fib(n-2)
 使用fork()编写一个程序，接受用户在命令行中输入一个数字n，输出Fibonacci序列中的前n个数。
-要求：使用shmget在父进程与子进程之间建立一个共享内存段，允许子进程将Fibonacci序列的内容写入共享内存段，父进程等待子进程，当子进程完成后，父进程输出Fibonacci序列。参考步骤如下：
+要求：使用 shmget 在父进程与子进程之间建立一个共享内存段，允许子进程将 Fibonacci 序列的内容写入共享内存段，父进程等待子进程，当子进程完成后，父进程输出 Fibonacci 序列。参考步骤如下：
 
 - a.接受命令行上传递的参数，执行错误检查
 - b.创建一个共享内存段
