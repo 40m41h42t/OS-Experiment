@@ -1,0 +1,45 @@
+//写者优先 
+int wcount = 0;  //用于记录写者数量 
+int rcount = 0;   //用于记录读者数量
+semaphore rmutex = 1;   //用于读者进程互斥修改rcount
+semaphore wmutex = 1;   //用于写者进程互斥修改wcount
+semaphore file = 1;    //用于读者写者互斥访问file 
+semphore  read = 1;     //用于阻塞读者进程，实现写者优先 
+
+writer()  // 写者
+{
+    P(wmutex);   // 写者进程互斥锁
+    if(wcount == 0)
+        P(read);
+    wcount++;
+    V(wmutex);   // 释放
+   
+    P(file);     //写者互斥访问文件 
+    do_writing();
+    V(file);
+   
+    P(wmutex)
+    wcount--;
+    if(wcount == 0)
+        V(read);
+    V(wmutex);
+} 
+
+reader()
+{
+    P(read);     //检查写者队列是否为空。 
+    P(rmutex);
+    if(rcount == 0)
+       P(file);   //申请文件资源 
+    rcount++;
+    V(rmutex);
+    V(read); 
+   
+    do_reading();
+   
+    P(rmutex);
+    rcount--;
+    if(rcount == 0)
+        V(file);
+    V(rmutex);
+}
