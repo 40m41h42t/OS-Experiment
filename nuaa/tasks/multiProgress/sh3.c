@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <errno.h>
 
 #define BOOL int
@@ -145,31 +146,36 @@ void sh_dup(char *command, int pipe_read, int pipe_write)
     int i, len = strlen(command);
     BOOL f_stdout = FALSE, f_stdin = FALSE;
     char *file_input, *file_output;
-
+    char *p;
     for (i = 0; i < len; ++i)
     {
         if (command[i] == '>')
         {
+            p = command + i - 1;
+            while (*p == ' ')
+                *(p--) = '\0';
             command[i] = '\0';
             find_filename(&file_output, command + i + 1);
             f_stdout = TRUE;
         }
         else if (command[i] == '<')
         {
-            command[i] = '\0';
             find_filename(&file_input, command + i + 1);
+            p = command + i - 1;
+            while (*p == ' ')
+                *(p--) = '\0';
             f_stdin = TRUE;
         }
     }
     if (f_stdin)
-        fd_read = open(file_input, O_CREAT | O_RDWR, 0666);
+        fd_read = open(file_input, O_CREAT | O_RDWR, S_IREAD | S_IWRITE);
     else if (pipe_read > FD_UNDEF)
         fd_read = pipe_read;
     else
         fd_read = FD_UNDEF;
 
     if (f_stdout)
-        fd_write = open(file_output, O_CREAT | O_RDWR, 0666);
+        fd_write = open(file_output, O_CREAT | O_RDWR, S_IREAD | S_IWRITE);
     else if (pipe_write > FD_UNDEF)
         fd_write = pipe_write;
     else
@@ -228,7 +234,6 @@ void mysys(char *command, int fd_read, int fd_write)
         }
         split(command, &argc, argv);
         argv[argc] = NULL;
-        printf("%s\n", argv[0]);
         if (execvp(argv[0], argv) == -1)
             printf("%s exec failed: %s\n", argv[0], strerror(errno));
         exit(0);
@@ -241,11 +246,14 @@ int split(char *command, int *argc, char *argv[])
     int i;
     *argc = 0;
     argv[(*argc)++] = command;
-    for(i=0;i<strlen(command);++i){
-        if(command[i] == ' '){
+    for (i = 0; i < strlen(command); ++i)
+    {
+        if (command[i] == ' ')
+        {
             command[i] = '\0';
             p = command + i + 1;
-            while(*p&&(*p == ' ')){
+            while (*p && (*p == ' '))
+            {
                 ++p;
             }
             argv[(*argc)++] = p;
